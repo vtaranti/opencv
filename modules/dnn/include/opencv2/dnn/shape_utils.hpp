@@ -120,7 +120,7 @@ static inline Mat getPlane(const Mat &m, int n, int cn)
     return Mat(m.dims - 2, sz, m.type(), (void*)m.ptr<float>(n, cn));
 }
 
-static inline MatShape shape(const int* dims, const int n = 4)
+static inline MatShape shape(const int* dims, const int n)
 {
     MatShape shape;
     shape.assign(dims, dims + n);
@@ -132,12 +132,22 @@ static inline MatShape shape(const Mat& mat)
     return shape(mat.size.p, mat.dims);
 }
 
+static inline MatShape shape(const MatSize& sz)
+{
+    return shape(sz.p, sz.dims());
+}
+
+static inline MatShape shape(const UMat& mat)
+{
+    return shape(mat.size.p, mat.dims);
+}
+
 namespace {inline bool is_neg(int i) { return i < 0; }}
 
 static inline MatShape shape(int a0, int a1=-1, int a2=-1, int a3=-1)
 {
     int dims[] = {a0, a1, a2, a3};
-    MatShape s = shape(dims);
+    MatShape s = shape(dims, 4);
     s.erase(std::remove_if(s.begin(), s.end(), is_neg), s.end());
     return s;
 }
@@ -151,7 +161,7 @@ static inline int total(const MatShape& shape, int start = -1, int end = -1)
         return 0;
 
     int elems = 1;
-    CV_Assert(start < (int)shape.size() && end <= (int)shape.size() &&
+    CV_Assert(start <= (int)shape.size() && end <= (int)shape.size() &&
               start <= end);
     for(int i = start; i < end; i++)
     {
